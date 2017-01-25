@@ -1,0 +1,7 @@
+[package]
+name = "chessview"
+version = "0.1.0"
+authors = ["Pierre Chevalier <pierrechevalier83@gmail.com>"]
+
+[dependencies]
+termion = "*"
