@@ -51,11 +51,20 @@ pub fn expand_if_numeric(x: char) -> Vec<char> {
 
 }
 
+pub fn n_spaces(n: usize) -> String {
+    iter::repeat(' ').take(n).collect()
+}
+
 #[allow(unused_variables)]
-pub fn print_line(line: &[Cell]) {
+pub fn print_line(line: &[Cell], cell_width: usize) {
+    let pad_first = n_spaces( (cell_width - 1) / 2);
+	let pad_next = n_spaces(cell_width - 1 - pad_first.len());
     for cell in line {
         let bg = BgColor::from_ansi(cell.ansi_code);
+		
+        print!("{}", pad_first);
         print!("{}", cell.value);
+        print!("{}", pad_next);
     }
     print!("\n");
 }
@@ -75,6 +84,17 @@ pub fn unicode_pawn(x: char) -> char {
 		'p' => '♟',
 		'P' => '♙',
 		 _  => x,
+	}
+}
+
+struct BoardFormat {
+    pub cell_width: usize,
+}
+impl BoardFormat {
+    pub fn new() -> BoardFormat {
+	    BoardFormat {
+		    cell_width: 3,
+		}
 	}
 }
 
@@ -102,19 +122,18 @@ impl Board {
 
     }
 
-    pub fn print(&self, cells: &Vec<Cell>) {
+    pub fn print(&self, cells: &Vec<Cell>, fmt: &BoardFormat) {
         cells.chunks(self.n_cols)
             .into_iter()
             .map(|slice| {
-                print_line(slice);
+                print_line(slice, fmt.cell_width);
             })
             .collect::<Vec<_>>();
-
     }
 }
 
 fn main() {
-    let c = Board::new();
-    let mat = c.read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    c.print(&mat);
+    let b = Board::new();
+    let mat = b.read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    b.print(&mat, &BoardFormat::new());
 }
