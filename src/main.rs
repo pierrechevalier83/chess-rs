@@ -60,6 +60,24 @@ pub fn print_line(line: &[Cell]) {
     print!("\n");
 }
 
+pub fn unicode_pawn(x: char) -> char {
+    match x {
+	    'r' => '♜',
+		'R' => '♖',
+		'n' => '♞',
+		'N' => '♘',
+		'b' => '♝',
+		'B' => '♗',
+		'q' => '♛',
+		'Q' => '♕',
+		'k' => '♚',
+		'K' => '♔',
+		'p' => '♟',
+		'P' => '♙',
+		 _  => x,
+	}
+}
+
 struct Board {
     n_cols: usize,
     n_rows: usize,
@@ -77,7 +95,7 @@ impl Board {
             .into_iter()
             .map(|x| expand_if_numeric(x))
             .flat_map(|v| v.into_iter())
-            .map(|x| Cell::new(x, toggle_color(&mut ansi)))
+            .map(|x| Cell::new(unicode_pawn(x), toggle_color(&mut ansi)))
             .filter(|x| x.value != '/')
             .take(self.n_cols * self.n_rows)
             .collect()
