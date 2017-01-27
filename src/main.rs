@@ -2,7 +2,9 @@ extern crate termion;
 
 use termion::{color, style};
 use termion::input::TermRead;
+use termion::event::{Key, Event, MouseEvent};
 use std::iter;
+use std::io::Write;
 
 struct BgColor {
 }
@@ -160,6 +162,7 @@ impl Board {
     }
 
     pub fn print(&self, cells: &Vec<Cell>, fmt: &BoardFormat) {
+        print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
         cells.chunks(self.n_cols)
             .into_iter()
             .map(|row| {
@@ -171,10 +174,16 @@ impl Board {
 
 fn main() {
     let b = Board::new();
+    let fmt = BoardFormat::new();
     let mat = b.read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    for _ in std::io::stdin().events() {
-	    print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
-	    
-	    b.print(&mat, &BoardFormat::new());
-	}
+    b.print(&mat, &fmt);
+    for input in std::io::stdin().events() {
+        b.print(&mat, &fmt);
+        let evt = input.unwrap();
+        match evt {
+            Event::Key(Key::Char('q')) => break,
+            _ => {}
+        }
+        std::io::stdout().flush().ok().expect("Could not flush stdout");
+    }
 }
