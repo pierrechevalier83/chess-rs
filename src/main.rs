@@ -8,7 +8,7 @@ struct BgColor {
 }
 impl BgColor {
     pub fn from_ansi(value: u8) -> BgColor {
-        print!("{}", color::Bg(color::AnsiValue(value)));
+        print!("{}{}",color::Fg(color::Blue), color::Bg(color::AnsiValue(value)));
         BgColor {}
     }
 }
@@ -31,8 +31,8 @@ impl Cell {
     }
 }
 pub fn toggle_color(ansi: &mut u8) -> u8 {
-    let black: u8 = 1;
-    let white: u8 = 0;
+    let black: u8 = 0;
+    let white: u8 = 7;
     if *ansi == black {
         *ansi = white
     } else {
