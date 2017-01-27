@@ -1,7 +1,6 @@
 extern crate termion;
 
 use termion::{color, style};
-
 use std::iter;
 
 struct BgColor {
@@ -20,6 +19,7 @@ impl Drop for BgColor {
     }
 }
 
+#[derive(Clone)]
 pub struct Cell {
     pub value: char,
     pub ansi_code: u8,
@@ -72,21 +72,33 @@ impl Pad {
     }
 }
 
-pub fn print_row(line: &[Cell], fmt: &BoardFormat) {
+pub fn print_row(line: &Vec<Cell>, fmt: &BoardFormat) {
+    let pad = Pad::new(fmt.cell_height, 1);
+    for _ in 0..pad.before {
+        padding_line(line, fmt.cell_width);
+    }
     print_line(line, fmt.cell_width);
+    for _ in 0..pad.after {
+        padding_line(line, fmt.cell_width);
+    }
+}
+
+pub fn padding_line(line: &Vec<Cell>, cell_width: usize) {
+    print_line(&line.iter()
+                   .cloned()
+                   .map(|x| Cell::new(' ', x.ansi_code))
+                   .collect::<Vec<_>>(),
+               cell_width);
 }
 
 #[allow(unused_variables)]
-pub fn print_line(line: &[Cell], cell_width: usize) {
+pub fn print_line(line: &Vec<Cell>, cell_width: usize) {
     let pad = Pad::new(cell_width, 1);
-    let pad_first = n_spaces::<String>(pad.before);
-    let pad_next = n_spaces::<String>(pad.after);
     for cell in line {
         let bg = BgColor::from_ansi(cell.ansi_code);
-
-        print!("{}", pad_first);
+        print!("{}", n_spaces::<String>(pad.before));
         print!("{}", cell.value);
-        print!("{}", pad_next);
+        print!("{}", n_spaces::<String>(pad.after));
     }
     print!("\n");
 }
@@ -116,7 +128,7 @@ pub struct BoardFormat {
 impl BoardFormat {
     pub fn new() -> BoardFormat {
         BoardFormat {
-            cell_width: 3,
+            cell_width: 7,
             cell_height: 3,
         }
     }
@@ -150,7 +162,7 @@ impl Board {
         cells.chunks(self.n_cols)
             .into_iter()
             .map(|row| {
-                print_row(row, fmt);
+                print_row(&row.iter().cloned().collect::<Vec<_>>(), fmt);
             })
             .collect::<Vec<_>>();
     }
