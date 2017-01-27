@@ -8,7 +8,9 @@ struct BgColor {
 }
 impl BgColor {
     pub fn from_ansi(value: u8) -> BgColor {
-        print!("{}{}",color::Fg(color::Blue), color::Bg(color::AnsiValue(value)));
+        print!("{}{}",
+               color::Fg(color::Blue),
+               color::Bg(color::AnsiValue(value)));
         BgColor {}
     }
 }
@@ -41,27 +43,28 @@ pub fn toggle_color(ansi: &mut u8) -> u8 {
     *ansi
 }
 
+pub fn n_spaces<T>(n: usize) -> T
+    where T: std::iter::FromIterator<char>
+{
+    iter::repeat(' ').take(n).collect::<T>()
+}
+
 pub fn expand_if_numeric(x: char) -> Vec<char> {
     if x.is_numeric() {
-        let space: char = ' ';
-        iter::repeat(space).take(x.to_string().parse::<usize>().unwrap()).collect::<Vec<_>>()
+        n_spaces(x.to_string().parse::<usize>().unwrap())
     } else {
         vec![x]
     }
 
 }
 
-pub fn n_spaces(n: usize) -> String {
-    iter::repeat(' ').take(n).collect()
-}
-
 #[allow(unused_variables)]
 pub fn print_line(line: &[Cell], cell_width: usize) {
-    let pad_first = n_spaces( (cell_width - 1) / 2);
-	let pad_next = n_spaces(cell_width - 1 - pad_first.len());
+    let pad_first = n_spaces::<String>((cell_width - 1) / 2);
+    let pad_next = n_spaces::<String>(cell_width - 1 - pad_first.len());
     for cell in line {
         let bg = BgColor::from_ansi(cell.ansi_code);
-		
+
         print!("{}", pad_first);
         print!("{}", cell.value);
         print!("{}", pad_next);
@@ -71,20 +74,20 @@ pub fn print_line(line: &[Cell], cell_width: usize) {
 
 pub fn unicode_pawn(x: char) -> char {
     match x {
-	    'r' => '♜',
-		'R' => '♖',
-		'n' => '♞',
-		'N' => '♘',
-		'b' => '♝',
-		'B' => '♗',
-		'q' => '♛',
-		'Q' => '♕',
-		'k' => '♚',
-		'K' => '♔',
-		'p' => '♟',
-		'P' => '♙',
-		 _  => x,
-	}
+        'r' => '♜',
+        'R' => '♖',
+        'n' => '♞',
+        'N' => '♘',
+        'b' => '♝',
+        'B' => '♗',
+        'q' => '♛',
+        'Q' => '♕',
+        'k' => '♚',
+        'K' => '♔',
+        'p' => '♟',
+        'P' => '♙',
+        _ => x,
+    }
 }
 
 struct BoardFormat {
@@ -92,10 +95,8 @@ struct BoardFormat {
 }
 impl BoardFormat {
     pub fn new() -> BoardFormat {
-	    BoardFormat {
-		    cell_width: 3,
-		}
-	}
+        BoardFormat { cell_width: 3 }
+    }
 }
 
 struct Board {
