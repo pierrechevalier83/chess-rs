@@ -1,8 +1,9 @@
 extern crate termion;
 
 use termion::{color, style};
-use termion::input::TermRead;
+use termion::input::{TermRead, MouseTerminal};
 use termion::event::{Key, Event, MouseEvent};
+use termion::raw::IntoRawMode;
 use std::iter;
 use std::io::Write;
 
@@ -75,35 +76,43 @@ impl Pad {
     }
 }
 
-pub fn print_row(line: &Vec<Cell>, fmt: &BoardFormat) {
+pub fn print_row<W: Write>(stdout: &mut W, line: &Vec<Cell>, fmt: &BoardFormat) {
     let pad = Pad::new(fmt.cell_height, 1);
     for _ in 0..pad.before {
-        padding_line(line, fmt.cell_width);
+        padding_line(stdout, line, fmt.cell_width);
     }
-    print_line(line, fmt.cell_width);
+    print_line(stdout, line, fmt.cell_width);
     for _ in 0..pad.after {
-        padding_line(line, fmt.cell_width);
+        padding_line(stdout, line, fmt.cell_width);
     }
 }
 
-pub fn padding_line(line: &Vec<Cell>, cell_width: usize) {
-    print_line(&line.iter()
+pub fn padding_line<W: Write>(stdout: &mut W, line: &Vec<Cell>, cell_width: usize) {
+    print_line(stdout,
+               &line.iter()
                    .cloned()
                    .map(|x| Cell::new(' ', x.ansi_code))
                    .collect::<Vec<_>>(),
                cell_width);
 }
 
+macro_rules! wr {
+    ($out:expr$(, $x:expr)* ) => (write!($out$(, $x)*).expect("Error while trying to write to out!"));
+}
+
 #[allow(unused_variables)]
-pub fn print_line(line: &Vec<Cell>, cell_width: usize) {
+pub fn print_line<W: Write>(stdout: &mut W, line: &Vec<Cell>, cell_width: usize) {
     let pad = Pad::new(cell_width, 1);
     for cell in line {
         let bg = BgColor::from_ansi(cell.ansi_code);
-        print!("{}", n_spaces::<String>(pad.before));
-        print!("{}", cell.value);
-        print!("{}", n_spaces::<String>(pad.after));
+        wr!(stdout, "{}", n_spaces::<String>(pad.before));
+        wr!(stdout, "{}", cell.value);
+        wr!(stdout, "{}", n_spaces::<String>(pad.after));
     }
-    print!("\n");
+    wr!(stdout, "\n");
+    wr!(stdout,
+        "{}",
+        termion::cursor::Left(cell_width as u16 * line.len() as u16));
 }
 
 pub fn unicode_pawn(x: char) -> char {
@@ -137,15 +146,17 @@ impl BoardFormat {
     }
 }
 
-struct Board {
+struct Board<W: Write> {
     n_cols: usize,
     n_rows: usize,
+    stdout: W,
 }
-impl Board {
-    pub fn new() -> Board {
+impl<W: Write> Board<W> {
+    pub fn new(w: W) -> Board<W> {
         Board {
             n_cols: 8,
             n_rows: 8,
+            stdout: w,
         }
     }
     pub fn read_xchess(&self, xchess: &'static str) -> Vec<Cell> {
@@ -161,27 +172,48 @@ impl Board {
 
     }
 
-    pub fn print(&self, cells: &Vec<Cell>, fmt: &BoardFormat) {
-        print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
+    pub fn print(&mut self, cells: &Vec<Cell>, fmt: &BoardFormat) {
+        wr!(self.stdout,
+            "{}{}",
+            termion::clear::All,
+            termion::cursor::Goto(1, 1));
         cells.chunks(self.n_cols)
             .into_iter()
             .map(|row| {
-                print_row(&row.iter().cloned().collect::<Vec<_>>(), fmt);
+                print_row(&mut self.stdout,
+                          &row.iter().cloned().collect::<Vec<_>>(),
+                          fmt);
             })
             .collect::<Vec<_>>();
+    }
+    pub fn handle_mouse(&mut self, x: u16, y: u16) {
+        wr!(self.stdout, "{},{}\n", x, y);
+        wr!(self.stdout, "{}", termion::cursor::Goto(1, 25));
     }
 }
 
 fn main() {
-    let b = Board::new();
+    let stdout = MouseTerminal::from(std::io::stdout().into_raw_mode().unwrap());
+    let mut b = Board::new(stdout);
     let fmt = BoardFormat::new();
     let mat = b.read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+
     b.print(&mat, &fmt);
+
     for input in std::io::stdin().events() {
         b.print(&mat, &fmt);
         let evt = input.unwrap();
         match evt {
             Event::Key(Key::Char('q')) => break,
+            Event::Mouse(me) => {
+                match me {
+                    MouseEvent::Press(_, x, y) => {
+                        b.handle_mouse(x, y);
+                    }
+                    _ => (),
+                }
+            }
             _ => {}
         }
         std::io::stdout().flush().ok().expect("Could not flush stdout");
