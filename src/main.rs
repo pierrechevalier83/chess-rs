@@ -1,6 +1,7 @@
 extern crate termion;
 
 use termion::{color, style};
+use termion::input::TermRead;
 use std::iter;
 
 struct BgColor {
@@ -171,5 +172,9 @@ impl Board {
 fn main() {
     let b = Board::new();
     let mat = b.read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    b.print(&mat, &BoardFormat::new());
+    for _ in std::io::stdin().events() {
+	    print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
+	    
+	    b.print(&mat, &BoardFormat::new());
+	}
 }
