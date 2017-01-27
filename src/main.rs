@@ -58,10 +58,29 @@ pub fn expand_if_numeric(x: char) -> Vec<char> {
 
 }
 
+struct Pad {
+    pub before: usize,
+    pub after: usize,
+}
+
+impl Pad {
+    pub fn new(width: usize, content: usize) -> Pad {
+        Pad {
+            before: (width - content) / 2 + 1 - width % 2,
+            after: (width - content) / 2,
+        }
+    }
+}
+
+pub fn print_row(line: &[Cell], fmt: &BoardFormat) {
+    print_line(line, fmt.cell_width);
+}
+
 #[allow(unused_variables)]
 pub fn print_line(line: &[Cell], cell_width: usize) {
-    let pad_first = n_spaces::<String>((cell_width - 1) / 2);
-    let pad_next = n_spaces::<String>(cell_width - 1 - pad_first.len());
+    let pad = Pad::new(cell_width, 1);
+    let pad_first = n_spaces::<String>(pad.before);
+    let pad_next = n_spaces::<String>(pad.after);
     for cell in line {
         let bg = BgColor::from_ansi(cell.ansi_code);
 
@@ -90,12 +109,16 @@ pub fn unicode_pawn(x: char) -> char {
     }
 }
 
-struct BoardFormat {
+pub struct BoardFormat {
     pub cell_width: usize,
+    pub cell_height: usize,
 }
 impl BoardFormat {
     pub fn new() -> BoardFormat {
-        BoardFormat { cell_width: 3 }
+        BoardFormat {
+            cell_width: 3,
+            cell_height: 3,
+        }
     }
 }
 
@@ -126,8 +149,8 @@ impl Board {
     pub fn print(&self, cells: &Vec<Cell>, fmt: &BoardFormat) {
         cells.chunks(self.n_cols)
             .into_iter()
-            .map(|slice| {
-                print_line(slice, fmt.cell_width);
+            .map(|row| {
+                print_row(row, fmt);
             })
             .collect::<Vec<_>>();
     }
