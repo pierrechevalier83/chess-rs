@@ -205,8 +205,10 @@ impl<W: Write> Board<W> {
         &mut self.cells[index]
     }
     pub fn handle_click(&mut self, x: u16, y: u16) {
-        self.cell_at_cursor_position(x, y).ansi_code = 3;// Cell::new('X', 0);
+        let old = self.cell_at_cursor_position(x, y).ansi_code.clone();
+        self.cell_at_cursor_position(x, y).ansi_code = 10;
         self.print();
+        self.cell_at_cursor_position(x, y).ansi_code = old;
     }
 }
 
