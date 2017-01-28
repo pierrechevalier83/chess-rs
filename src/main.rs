@@ -158,6 +158,14 @@ pub fn read_xchess(xchess: &'static str) -> Vec<Cell> {
         .collect()
 }
 
+fn zero_based(x: usize) -> usize {
+    x - 1
+}
+
+fn cursor_to_index(x: usize, cell_dim: usize, n_cells: usize) -> usize {
+    zero_based(std::cmp::min(x, n_cells * cell_dim)) / cell_dim
+}
+
 struct Board<W: Write> {
     n_cols: usize,
     stdout: W,
@@ -190,9 +198,15 @@ impl<W: Write> Board<W> {
             })
             .collect::<Vec<_>>();
     }
+    fn cell_at_cursor_position(&mut self, x: u16, y: u16) -> &mut Cell {
+        let col_index = cursor_to_index(x as usize, self.fmt.cell_width, self.n_cols);
+        let row_index = cursor_to_index(y as usize, self.fmt.cell_height, 8);
+        let index = col_index + self.n_cols * row_index;
+        &mut self.cells[index]
+    }
     pub fn handle_click(&mut self, x: u16, y: u16) {
-        wr!(self.stdout, "{},{}\n", x, y);
-        wr!(self.stdout, "{}", termion::cursor::Goto(1, 25));
+        self.cell_at_cursor_position(x, y).ansi_code = 3;// Cell::new('X', 0);
+        self.print();
     }
 }
 
@@ -205,7 +219,6 @@ fn main() {
     b.print();
 
     for input in std::io::stdin().events() {
-        b.print();
         let evt = input.unwrap();
         match evt {
             Event::Key(Key::Char('q')) => break,
