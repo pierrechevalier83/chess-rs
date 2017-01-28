@@ -146,47 +146,51 @@ impl BoardFormat {
     }
 }
 
+pub fn read_xchess(xchess: &'static str) -> Vec<Cell> {
+    let mut ansi: u8 = 0;
+    xchess.chars()
+        .into_iter()
+        .map(|x| expand_if_numeric(x))
+        .flat_map(|v| v.into_iter())
+        .map(|x| Cell::new(unicode_pawn(x), toggle_color(&mut ansi)))
+        .filter(|x| x.value != '/')
+        .take(8 * 8)
+        .collect()
+}
+
 struct Board<W: Write> {
     n_cols: usize,
-    n_rows: usize,
     stdout: W,
+    cells: Vec<Cell>,
+    fmt: BoardFormat,
 }
 impl<W: Write> Board<W> {
-    pub fn new(w: W) -> Board<W> {
+    pub fn new(w: W, cells: Vec<Cell>) -> Board<W> {
         Board {
             n_cols: 8,
-            n_rows: 8,
             stdout: w,
+            cells: cells,
+            fmt: BoardFormat::new(),
         }
     }
-    pub fn read_xchess(&self, xchess: &'static str) -> Vec<Cell> {
-        let mut ansi: u8 = 0;
-        xchess.chars()
-            .into_iter()
-            .map(|x| expand_if_numeric(x))
-            .flat_map(|v| v.into_iter())
-            .map(|x| Cell::new(unicode_pawn(x), toggle_color(&mut ansi)))
-            .filter(|x| x.value != '/')
-            .take(self.n_cols * self.n_rows)
-            .collect()
 
-    }
-
-    pub fn print(&mut self, cells: &Vec<Cell>, fmt: &BoardFormat) {
+    pub fn print(&mut self) {
         wr!(self.stdout,
             "{}{}",
             termion::clear::All,
             termion::cursor::Goto(1, 1));
-        cells.chunks(self.n_cols)
+        self.cells
+            .clone()
+            .chunks(self.n_cols)
             .into_iter()
             .map(|row| {
                 print_row(&mut self.stdout,
                           &row.iter().cloned().collect::<Vec<_>>(),
-                          fmt);
+                          &self.fmt);
             })
             .collect::<Vec<_>>();
     }
-    pub fn handle_mouse(&mut self, x: u16, y: u16) {
+    pub fn handle_click(&mut self, x: u16, y: u16) {
         wr!(self.stdout, "{},{}\n", x, y);
         wr!(self.stdout, "{}", termion::cursor::Goto(1, 25));
     }
@@ -194,22 +198,21 @@ impl<W: Write> Board<W> {
 
 fn main() {
     let stdout = MouseTerminal::from(std::io::stdout().into_raw_mode().unwrap());
-    let mut b = Board::new(stdout);
-    let fmt = BoardFormat::new();
-    let mat = b.read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    let mut b = Board::new(stdout,
+                           read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
 
 
-    b.print(&mat, &fmt);
+    b.print();
 
     for input in std::io::stdin().events() {
-        b.print(&mat, &fmt);
+        b.print();
         let evt = input.unwrap();
         match evt {
             Event::Key(Key::Char('q')) => break,
             Event::Mouse(me) => {
                 match me {
                     MouseEvent::Press(_, x, y) => {
-                        b.handle_mouse(x, y);
+                        b.handle_click(x, y);
                     }
                     _ => (),
                 }
