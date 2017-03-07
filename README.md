@@ -1,5 +1,5 @@
-chessview (WIP) - a cli frontend for chess written in rust
-----------------------------------------------------
+chess-rs (WIP) - a cli frontend for chess written in rust
+---------------------------------------------------------
 - We use [matrix_display](https://github.com/pierrechevalier83/matrix_display) to pretty print the board in all its colours and unicode glory.
 - We use [termion](https://github.com/ticki/termion) for handling user input.
 
