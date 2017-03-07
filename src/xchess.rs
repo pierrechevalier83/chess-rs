@@ -38,15 +38,15 @@ pub fn read_xchess(xchess: &'static str) -> Vec<cell::Cell<char>> {
         .map(|x| expand_if_numeric(x))
         .flat_map(|v| v.into_iter())
         .filter(|x| *x != '/')
-		.enumerate()
+        .enumerate()
         .map(|(i, x)| {
             let ansi_fg = 33;
             let mut ansi_bg = 0;
             if i % 2 + (i / 8) % 2 == 1 {
                 ansi_bg = 7;
             }
-		    cell::Cell::new(unicode_pawn(x), ansi_fg, ansi_bg)
-		})
+            cell::Cell::new(unicode_pawn(x), ansi_fg, ansi_bg)
+        })
         .take(8 * 8)
         .collect()
 }
