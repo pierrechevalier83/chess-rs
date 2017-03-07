@@ -5,6 +5,10 @@ chess-rs (WIP) - a cli frontend for chess written in rust
 
 ![alt tag](https://github.com/pierrechevalier83/matrix_display/blob/master/screenshots/chess.png)
 
+Install (the easy way)
+----------------------
+`cargo install chess-rs`
+
 Download
 --------
 `git clone git@github.com:pierrechevalier83/chessview.git`
