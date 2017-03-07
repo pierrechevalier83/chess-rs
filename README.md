@@ -11,7 +11,7 @@ Install (the easy way)
 
 Download
 --------
-`git clone git@github.com:pierrechevalier83/chessview.git`
+`git clone git@github.com:pierrechevalier83/chess-rs.git`
 
 Build
 -----
