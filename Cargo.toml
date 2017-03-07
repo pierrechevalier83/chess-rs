@@ -1,7 +1,9 @@
 [package]
-name = "chessview"
+name = "chess-rs"
+description = "A cli implementation of the chess game writen in rust"
 version = "0.1.0"
 authors = ["Pierre Chevalier <pierrechevalier83@gmail.com>"]
+license = "MIT"
 
 [dependencies]
 matrix_display = "0.4"
