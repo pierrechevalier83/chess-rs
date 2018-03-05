@@ -23,8 +23,8 @@ where
 fn main() {
     let format = Format::new(7, 3);
     let board = xchess::read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    let data = matrix::Matrix::new(8, board);
-    let mut display = MatrixDisplay::new(format, data);
+    let mut data = matrix::Matrix::new(8, board);
+    let mut display = MatrixDisplay::new(&format, &mut data);
     let mut stdout = MouseTerminal::from(std::io::stdout().into_raw_mode().unwrap());
     clear(&mut stdout);
     display.print(&mut stdout, &style::BordersStyle::None);
