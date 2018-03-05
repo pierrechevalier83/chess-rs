@@ -1,7 +1,8 @@
 use matrix_display::cell;
 
 fn n_spaces<T>(n: usize) -> T
-    where T: ::std::iter::FromIterator<char>
+where
+    T: ::std::iter::FromIterator<char>,
 {
     ::std::iter::repeat(' ').take(n).collect::<T>()
 }
@@ -33,7 +34,8 @@ fn unicode_pawn(x: char) -> char {
 }
 
 pub fn read_xchess(xchess: &'static str) -> Vec<cell::Cell<char>> {
-    xchess.chars()
+    xchess
+        .chars()
         .into_iter()
         .map(|x| expand_if_numeric(x))
         .flat_map(|v| v.into_iter())

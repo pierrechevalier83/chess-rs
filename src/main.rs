@@ -2,20 +2,22 @@ extern crate matrix_display;
 extern crate termion;
 
 use matrix_display::*;
-use termion::input::{TermRead, MouseTerminal};
-use termion::event::{Key, Event, MouseEvent};
+use termion::input::{MouseTerminal, TermRead};
+use termion::event::{Event, Key, MouseEvent};
 use termion::raw::IntoRawMode;
 mod xchess;
 
 fn clear<W>(out: &mut W)
-    where W: std::io::Write
+where
+    W: std::io::Write,
 {
-    write!(out,
-           "{}{}{}",
-           termion::clear::All,
-           termion::cursor::Hide,
-           termion::cursor::Goto(1, 1))
-        .unwrap();
+    write!(
+        out,
+        "{}{}{}",
+        termion::clear::All,
+        termion::cursor::Hide,
+        termion::cursor::Goto(1, 1)
+    ).unwrap();
 }
 
 fn main() {
@@ -30,24 +32,23 @@ fn main() {
         let evt = input.unwrap();
         match evt {
             Event::Key(Key::Char('q')) => break,
-            Event::Mouse(me) => {
-                match me {
-                    MouseEvent::Press(_, x, y) => {
-                        let previous_bg_color;
-                        {
-                            let mut cell =
-                                display.cell_at_cursor_position((x as usize, y as usize));
-                            previous_bg_color = cell.color.bg;
-                            cell.color.bg = 10;
-                        }
-                        clear(&mut stdout);
-                        display.print(&mut stdout, &style::BordersStyle::None);
-                        display.cell_at_cursor_position((x as usize, y as usize)).color.bg =
-                            previous_bg_color;
+            Event::Mouse(me) => match me {
+                MouseEvent::Press(_, x, y) => {
+                    let previous_bg_color;
+                    {
+                        let mut cell = display.cell_at_cursor_position((x as usize, y as usize));
+                        previous_bg_color = cell.color.bg;
+                        cell.color.bg = 10;
                     }
-                    _ => (),
+                    clear(&mut stdout);
+                    display.print(&mut stdout, &style::BordersStyle::None);
+                    display
+                        .cell_at_cursor_position((x as usize, y as usize))
+                        .color
+                        .bg = previous_bg_color;
                 }
-            }
+                _ => (),
+            },
             _ => {}
         }
     }
