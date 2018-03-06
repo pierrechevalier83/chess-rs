@@ -41,10 +41,14 @@ fn redraw(
     display.print(&mut stdout, &style::BordersStyle::None);
 }
 
-fn main() {
+fn initial_grid() -> (Format, matrix::Matrix<cell::Cell<char>>) {
     let format = Format::new(7, 3);
     let board = xchess::read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    let mut data = matrix::Matrix::new(8, board);
+    (format, matrix::Matrix::new(8, board))
+}
+
+fn main() {
+    let (format, mut data) = initial_grid();
     let mut display = MatrixDisplay::new(&format, &mut data);
     let mut stdout = MouseTerminal::from(std::io::stdout().into_raw_mode().unwrap());
     redraw(&mut stdout, &display);
