@@ -20,19 +20,34 @@ where
     ).unwrap();
 }
 
+#[derive(Clone)]
 struct Selection {
     pos: (usize, usize),
     cell: cell::Cell<char>,
 }
 
-fn get_cell(display: &mut MatrixDisplay<char>, x: u16, y: u16) -> cell::Cell<char> {
-    display
-        .cell_at_cursor_position((x as usize, y as usize))
-        .clone()
+fn get_cell(display: &mut MatrixDisplay<char>, pos: (usize, usize)) -> cell::Cell<char> {
+    display.cell_at_cursor_position(pos).clone()
 }
 
 fn set_bg(display: &mut MatrixDisplay<char>, pos: (usize, usize), bg: u8) {
-    display.cell_at_cursor_position((pos.0, pos.1)).color.bg = bg;
+    display.cell_at_cursor_position(pos).color.bg = bg;
+}
+
+fn swap_cells(
+    display: &mut MatrixDisplay<char>,
+    left_pos: (usize, usize),
+    right_pos: (usize, usize),
+) {
+    let left_value = get_cell(display, left_pos).value;
+    display
+        .cell_at_cursor_position((left_pos.0, left_pos.1))
+        .value = display
+        .cell_at_cursor_position((right_pos.0, right_pos.1))
+        .value;
+    display
+        .cell_at_cursor_position((right_pos.0, right_pos.1))
+        .value = left_value;
 }
 
 fn redraw(
@@ -70,9 +85,17 @@ fn main() {
             Event::Key(Key::Char('q')) => break,
             Event::Mouse(me) => match me {
                 MouseEvent::Press(_, x, y) => {
+                    let pos = (x as usize, y as usize);
+                    let cell = get_cell(&mut display, pos);
+                    match selection {
+                        Some(sel) => if cell.value == ' ' && sel.cell.value != ' ' {
+                            swap_cells(&mut display, sel.pos, pos)
+                        },
+                        None => (),
+                    }
                     selection = Some(Selection {
-                        pos: (x as usize, y as usize),
-                        cell: get_cell(&mut display, x, y),
+                        pos: pos,
+                        cell: get_cell(&mut display, pos),
                     });
                     redraw(&mut stdout, &mut display, &selection);
                 }
