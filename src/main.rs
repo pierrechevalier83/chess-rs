@@ -33,14 +33,21 @@ fn set_bg(display: &mut MatrixDisplay<char>, x: u16, y: u16, bg: u8) {
         .bg = bg;
 }
 
+fn redraw(
+    mut stdout: &mut MouseTerminal<termion::raw::RawTerminal<std::io::Stdout>>,
+    display: &MatrixDisplay<char>,
+) {
+    clear(&mut stdout);
+    display.print(&mut stdout, &style::BordersStyle::None);
+}
+
 fn main() {
     let format = Format::new(7, 3);
     let board = xchess::read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     let mut data = matrix::Matrix::new(8, board);
     let mut display = MatrixDisplay::new(&format, &mut data);
     let mut stdout = MouseTerminal::from(std::io::stdout().into_raw_mode().unwrap());
-    clear(&mut stdout);
-    display.print(&mut stdout, &style::BordersStyle::None);
+    redraw(&mut stdout, &display);
     for input in std::io::stdin().events() {
         let evt = input.unwrap();
         match evt {
@@ -49,8 +56,7 @@ fn main() {
                 MouseEvent::Press(_, x, y) => {
                     let previous_cell = get_cell(&mut display, x, y);
                     set_bg(&mut display, x, y, 23);
-                    clear(&mut stdout);
-                    display.print(&mut stdout, &style::BordersStyle::None);
+                    redraw(&mut stdout, &display);
                     set_bg(&mut display, x, y, previous_cell.color.bg);
                 }
                 _ => (),
