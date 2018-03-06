@@ -20,6 +20,19 @@ where
     ).unwrap();
 }
 
+fn get_cell(display: &mut MatrixDisplay<char>, x: u16, y: u16) -> cell::Cell<char> {
+    display
+        .cell_at_cursor_position((x as usize, y as usize))
+        .clone()
+}
+
+fn set_bg(display: &mut MatrixDisplay<char>, x: u16, y: u16, bg: u8) {
+    display
+        .cell_at_cursor_position((x as usize, y as usize))
+        .color
+        .bg = bg;
+}
+
 fn main() {
     let format = Format::new(7, 3);
     let board = xchess::read_xchess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -34,18 +47,11 @@ fn main() {
             Event::Key(Key::Char('q')) => break,
             Event::Mouse(me) => match me {
                 MouseEvent::Press(_, x, y) => {
-                    let previous_bg_color;
-                    {
-                        let mut cell = display.cell_at_cursor_position((x as usize, y as usize));
-                        previous_bg_color = cell.color.bg;
-                        cell.color.bg = 10;
-                    }
+                    let previous_cell = get_cell(&mut display, x, y);
+                    set_bg(&mut display, x, y, 23);
                     clear(&mut stdout);
                     display.print(&mut stdout, &style::BordersStyle::None);
-                    display
-                        .cell_at_cursor_position((x as usize, y as usize))
-                        .color
-                        .bg = previous_bg_color;
+                    set_bg(&mut display, x, y, previous_cell.color.bg);
                 }
                 _ => (),
             },
