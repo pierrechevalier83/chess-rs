@@ -144,6 +144,18 @@ fn initial_grid() -> chess::Board {
     chess::Board::from_fen(starting_position.to_string()).unwrap()
 }
 
+fn is_legal_move(board: chess::Board, origin: chess::Square, destination: chess::Square) -> bool {
+    // TODO: handle promotion (not always None)
+    board.legal(chess::ChessMove::new(origin, destination, None))
+}
+
+fn click_to_square(x: u16, y: u16) -> chess::Square {
+    chess::Square::make_square(
+        chess::Rank::from_index(x as usize),
+        chess::File::from_index(y as usize),
+    )
+}
+
 fn main() {
     let format = Format::new(7, 3);
     let board = initial_grid();
@@ -158,7 +170,8 @@ fn main() {
             Event::Key(Key::Char('q')) => break,
             Event::Mouse(me) => match me {
                 MouseEvent::Press(_, x, y) => {
-                    let pos = (x as usize, y as usize);
+                    let square = click_to_square(x, y);
+                    let pos = (square.get_rank().to_index(), square.get_file().to_index());
                     let cell = get_cell(&mut display, pos);
                     match selection {
                         Some(sel) => if cell.value == ' ' && sel.cell.value != ' ' {
