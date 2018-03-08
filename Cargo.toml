@@ -8,3 +8,4 @@ license = "MIT"
 [dependencies]
 matrix_display = "0.9"
 termion = "1.5"
+chess = "0.4"
