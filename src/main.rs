@@ -121,7 +121,6 @@ fn rank_to_display(board: chess::Board, rank: &chess::Rank) -> Vec<cell::Cell<ch
         .iter()
         .map(|file| {
             let square = chess::Square::make_square(*rank, *file);
-
             cell::Cell::new(
                 piece_on_square(board, square, color_of_piece(board, square)),
                 ansi_blue,
@@ -140,21 +139,15 @@ fn board_to_display(board: chess::Board) -> matrix::Matrix<cell::Cell<char>> {
     matrix::Matrix::new(chess::NUM_RANKS, all_squares)
 }
 
-fn initial_grid() -> (
-    Format,
-    matrix::Matrix<cell::Cell<char>>,
-    Option<chess::Board>,
-) {
-    let format = Format::new(7, 3);
+fn initial_grid() -> chess::Board {
     let starting_position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    let chess_board = chess::Board::from_fen(starting_position.to_string());
-    (format, board_to_display(chess_board.unwrap()), chess_board)
+    chess::Board::from_fen(starting_position.to_string()).unwrap()
 }
 
 fn main() {
-    let (format, mut data, board) = initial_grid();
-    let text = format!("{}", board.unwrap());
-    println!("{}", text);
+    let format = Format::new(7, 3);
+    let board = initial_grid();
+    let mut data = board_to_display(board);
     let mut display = MatrixDisplay::new(&format, &mut data);
     let mut stdout = MouseTerminal::from(std::io::stdout().into_raw_mode().unwrap());
     let mut selection: Option<Selection> = None;
