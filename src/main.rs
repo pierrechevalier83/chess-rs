@@ -59,14 +59,14 @@ fn to_unicode(piece: chess::Piece, color: chess::Color) -> char {
     }
 }
 
-fn piece_on_square(board: chess::Board, square: chess::Square, color: chess::Color) -> char {
+fn piece_on_square(board: &chess::Board, square: chess::Square, color: chess::Color) -> char {
     match board.piece_on(square) {
         Some(piece) => to_unicode(piece, color),
         None => ' ',
     }
 }
 
-fn color_of_piece(board: chess::Board, square: chess::Square) -> chess::Color {
+fn color_of_piece(board: &chess::Board, square: chess::Square) -> chess::Color {
     let bb = chess::BitBoard::from_square(square);
     if (board.color_combined(chess::Color::White) & bb) == bb {
         chess::Color::White
@@ -76,7 +76,7 @@ fn color_of_piece(board: chess::Board, square: chess::Square) -> chess::Color {
 }
 
 fn rank_to_display(
-    board: chess::Board,
+    board: &chess::Board,
     rank: &chess::Rank,
     selection: &Option<chess::Square>,
 ) -> Vec<cell::Cell<char>> {
@@ -94,7 +94,7 @@ fn rank_to_display(
 }
 
 fn board_to_display(
-    board: chess::Board,
+    board: &chess::Board,
     selection: &Option<chess::Square>,
 ) -> matrix::Matrix<cell::Cell<char>> {
     let all_squares = chess::ALL_RANKS
@@ -139,7 +139,7 @@ fn click_to_square(click: (u16, u16)) -> chess::Square {
 
 fn draw(
     mut stdout: &mut MouseTerminal<termion::raw::RawTerminal<std::io::Stdout>>,
-    board: chess::Board,
+    board: &chess::Board,
     selection: &Option<chess::Square>,
 ) {
     let format = Format::new(7, 3);
@@ -153,7 +153,7 @@ fn main() {
     let mut board = initial_grid();
     let mut selection: Option<chess::Square> = None;
     let mut stdout = MouseTerminal::from(std::io::stdout().into_raw_mode().unwrap());
-    draw(&mut stdout, board, &selection);
+    draw(&mut stdout, &board, &selection);
     for input in std::io::stdin().events() {
         let evt = input.unwrap();
         match evt {
@@ -176,7 +176,7 @@ fn main() {
                             }
                         }
                     }
-                    draw(&mut stdout, board, &selection);
+                    draw(&mut stdout, &board, &selection);
                 }
                 _ => (),
             },
