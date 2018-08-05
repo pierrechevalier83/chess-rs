@@ -126,14 +126,11 @@ fn click_to_square(click: (u16, u16)) -> chess::Square {
             .collect::<Vec<_>>(),
     );
     let display = MatrixDisplay::new(&format, &mut data);
-    println!("Clicked {}, {}", click.0, click.1);
     let pos = display.coordinates_at_cursor_position((click.0 as usize, click.1 as usize));
-    println!("Pos {}, {}", pos.0, pos.1);
     let sq = chess::Square::make_square(
         chess::Rank::from_index(chess::NUM_RANKS - 1 - pos.1),
         chess::File::from_index(pos.0),
     );
-    println!("Square {}", sq);
     sq
 }
 
