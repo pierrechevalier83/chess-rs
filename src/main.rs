@@ -7,6 +7,13 @@ use termion::input::{MouseTerminal, TermRead};
 use termion::event::{Event, Key, MouseEvent};
 use termion::raw::IntoRawMode;
 
+enum AnsiColor {
+    White = 0,
+    Dark = 7,
+    Grey = 23,
+    Blue = 33,
+}
+
 fn clear<W>(out: &mut W)
 where
     W: std::io::Write,
@@ -20,16 +27,13 @@ where
     ).unwrap();
 }
 
-fn square_bg_in_ansi(square: chess::Square, selection: &Option<chess::Square>) -> u8 {
-    let ansi_white = 0;
-    let ansi_dark = 7;
-    let ansi_grey = 23;
+fn square_bg(square: chess::Square, selection: &Option<chess::Square>) -> AnsiColor {
     if Some(square) == *selection {
-        ansi_grey
+        AnsiColor::Grey
     } else if (square.get_rank().to_index() + square.get_file().to_index()) % 2 == 0 {
-        ansi_white
+        AnsiColor::White
     } else {
-        ansi_dark
+        AnsiColor::Dark
     }
 }
 
@@ -76,15 +80,14 @@ fn rank_to_display(
     rank: &chess::Rank,
     selection: &Option<chess::Square>,
 ) -> Vec<cell::Cell<char>> {
-    let ansi_blue = 33;
     chess::ALL_FILES
         .iter()
         .map(|file| {
             let square = chess::Square::make_square(*rank, *file);
             cell::Cell::new(
                 piece_on_square(board, square, color_of_piece(board, square)),
-                ansi_blue,
-                square_bg_in_ansi(square, selection),
+                AnsiColor::Blue as u8,
+                square_bg(square, selection) as u8,
             )
         })
         .collect()
