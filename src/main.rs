@@ -110,7 +110,7 @@ fn initial_grid() -> chess::Board {
     chess::Board::from_fen(starting_position.to_string()).unwrap()
 }
 
-fn is_legal_move(board: chess::Board, chess_move: chess::ChessMove) -> bool {
+fn is_legal_move(board: &chess::Board, chess_move: chess::ChessMove) -> bool {
     board.legal(chess_move)
 }
 
@@ -165,7 +165,7 @@ fn main() {
                         Some(previous_selection) => {
                             let attempted_move =
                                 chess::ChessMove::new(previous_selection, square, None);
-                            if is_legal_move(board, attempted_move) {
+                            if is_legal_move(&board, attempted_move) {
                                 board = board.make_move(attempted_move);
                             }
                             selection = None;
